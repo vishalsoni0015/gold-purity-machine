@@ -1,31 +1,48 @@
 import streamlit as st
-import pandas as pd
 
-# Tumhara sample data
-data = {
-    "Material": ["Gold", "Silver", "Fake Gold", "Copper"],
-    "Purity": [99.9, 92.5, 50.0, 89.0]
-}
-df = pd.DataFrame(data)
+st.set_page_config(page_title="Metal Purity Machine", layout="centered")
 
-# Tumhara function
+# Title
+st.title("🔍 Gold & Silver Purity Testing Machine")
+st.caption("AI-powered demo purity analyzer (chemical-free)")
+
+# Inputs
+material = st.selectbox(
+    "Select Material",
+    ["Gold", "Silver", "Fake Gold", "Copper"]
+)
+
+purity = st.slider(
+    "Enter Purity (%)",
+    0.0, 100.0, 90.0
+)
+
+# Logic
 def machine_result(material, purity):
     if material == "Gold":
-        status = "REAL GOLD ✅"
+        status = "REAL GOLD ✅" if purity >= 91.6 else "FAKE ❌"
+        confidence = min(purity, 99.9)
     elif material == "Silver":
-        status = "REAL SILVER ✅"
+        status = "REAL SILVER ✅" if purity >= 92.5 else "FAKE ❌"
+        confidence = min(purity, 99.9)
     else:
         status = "FAKE / NOT PURE ❌"
-    return status
+        confidence = purity * 0.6
 
-# Streamlit UI
-st.title("Gold/Silver Purity Machine 🔥")
-st.write("Ye machine bata rahi hai ki material real hai ya fake")
+    return status, round(confidence, 2)
 
-# Display results in table
-for _, row in df.iterrows():
-    status = machine_result(row["Material"], row["Purity"])
-    st.write(f"**Material:** {row['Material']}")
-    st.write(f"**Purity:** {row['Purity']}%")
-    st.write(f"**Status:** {status}")
-    st.write("---")
+# Button
+if st.button("🔎 SCAN MATERIAL"):
+    status, confidence = machine_result(material, purity)
+
+    st.subheader("📊 Scan Result")
+
+    if "REAL" in status:
+        st.success(status)
+    else:
+        st.error(status)
+
+    st.write(f"**Confidence Level:** {confidence}%")
+    st.progress(confidence / 100)
+
+    st.info("⚠️ This is a software demo. Real machine will use sensor data.")
